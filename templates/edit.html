@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Your Resume - AI Resume Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .editor-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .preview-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-height: 800px;
+            overflow-y: auto;
+        }
+        
+        .editor-panel h3 {
+            color: #667eea;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .editor-group {
+            margin-bottom: 20px;
+        }
+        
+        .editor-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #2d3748;
+            font-size: 14px;
+        }
+        
+        .editor-group input,
+        .editor-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .editor-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .experience-item,
+        .education-item {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #f7fafc;
+        }
+        
+        .design-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .design-select:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .color-grid-large {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .color-option-small {
+            display: inline-block;
+            padding: 6px;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        .color-option-small:hover {
+            border-color: #667eea;
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .color-option-small input[type="radio"] {
+            display: none;
+        }
+        
+        .color-option-small input[type="radio"]:checked + .color-dot {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.5), 0 4px 12px rgba(0,0,0,0.3);
+            border: 3px solid #667eea;
+        }
+        
+        .color-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: block;
+            cursor: pointer;
+        }
+        
+        .color-option-small:has(input[type="radio"]:checked) {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .preview-iframe {
+            width: 100%;
+            height: 700px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        @media (max-width: 1024px) {
+            .editor-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✏️ Edit Your Resume</h1>
+            <p class="subtitle">Make manual changes, then regenerate</p>
+        </header>
+
+        <div class="editor-container">
+            <!-- Left: Editor -->
+            <div class="editor-panel">
+                <form action="/regenerate" method="POST" id="editForm">
+                    <!-- Design Customization -->
+                    <h3>🎨 Design Settings</h3>
+                    
+                    <div class="editor-group">
+                        <label>Template Design</label>
+                        <select name="template" class="design-select">
+                            <option value="sidebar_accent" {% if template == 'sidebar_accent' %}selected{% endif %}>Sidebar Accent - Left sidebar design</option>
+                            <option value="diagonal_header" {% if template == 'diagonal_header' %}selected{% endif %}>Diagonal Header - Geometric design</option>
+                            <option value="circle_accent" {% if template == 'circle_accent' %}selected{% endif %}>Circle Accent - Circular elements</option>
+                        </select>
+                    </div>
+
+                    <div class="editor-group">
+                        <label>Accent Color (16 Options!)</label>
+                        <div class="color-grid-large">
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="blue" {% if color_scheme == 'blue' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #4A90E2;" title="Blue"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="indigo" {% if color_scheme == 'indigo' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #6366f1;" title="Indigo"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="purple" {% if color_scheme == 'purple' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #9333ea;" title="Purple"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="violet" {% if color_scheme == 'violet' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #8b5cf6;" title="Violet"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="teal" {% if color_scheme == 'teal' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #14b8a6;" title="Teal"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="emerald" {% if color_scheme == 'emerald' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #10b981;" title="Emerald"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="green" {% if color_scheme == 'green' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #22c55e;" title="Green"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="lime" {% if color_scheme == 'lime' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #84cc16;" title="Lime"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="rose" {% if color_scheme == 'rose' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #f43f5e;" title="Rose"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="pink" {% if color_scheme == 'pink' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #ec4899;" title="Pink"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="red" {% if color_scheme == 'red' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #ef4444;" title="Red"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="orange" {% if color_scheme == 'orange' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #f97316;" title="Orange"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="amber" {% if color_scheme == 'amber' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #f59e0b;" title="Amber"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="yellow" {% if color_scheme == 'yellow' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #eab308;" title="Yellow"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="cyan" {% if color_scheme == 'cyan' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #06b6d4;" title="Cyan"></span>
+                            </label>
+                            <label class="color-option-small">
+                                <input type="radio" name="color_scheme" value="sky" {% if color_scheme == 'sky' %}checked{% endif %}>
+                                <span class="color-dot" style="background: #0ea5e9;" title="Sky"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="editor-group">
+                        <label>Font Style</label>
+                        <select name="font_family" class="design-select">
+                            <option value="helvetica" {% if font_family == 'helvetica' %}selected{% endif %}>Helvetica - Modern & clean</option>
+                            <option value="times" {% if font_family == 'times' %}selected{% endif %}>Times New Roman - Classic</option>
+                            <option value="courier" {% if font_family == 'courier' %}selected{% endif %}>Courier - Typewriter</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" name="api_key" value="{{ api_key }}">
+                    
+                    <h3>👤 Contact Info</h3>
+                    <div class="editor-group">
+                        <label>Name</label>
+                        <input type="text" name="name" value="{{ user_info.name }}" required>
+                    </div>
+                    <div class="editor-group">
+                        <label>Email</label>
+                        <input type="email" name="email" value="{{ user_info.email }}">
+                    </div>
+                    <div class="editor-group">
+                        <label>Phone</label>
+                        <input type="tel" name="phone" value="{{ user_info.phone }}">
+                    </div>
+                    <div class="editor-group">
+                        <label>Location</label>
+                        <input type="text" name="location" value="{{ user_info.location }}">
+                    </div>
+
+                    <h3>📝 Professional Summary</h3>
+                    <div class="editor-group">
+                        <textarea name="summary" rows="4">{{ resume_data.summary }}</textarea>
+                    </div>
+
+                    <h3>🔧 Skills</h3>
+                    <div class="editor-group">
+                        <label>Skills (comma-separated)</label>
+                        <input type="text" name="skills" value="{{ resume_data.skills|join(', ') }}">
+                    </div>
+
+                    <h3>💼 Experience</h3>
+                    {% for exp in resume_data.experience %}
+                    <div class="experience-item">
+                        <div class="editor-group">
+                            <label>Job Title</label>
+                            <input type="text" name="exp_title_{{ loop.index0 }}" value="{{ exp.title }}">
+                        </div>
+                        <div class="editor-group">
+                            <label>Company</label>
+                            <input type="text" name="exp_company_{{ loop.index0 }}" value="{{ exp.company }}">
+                        </div>
+                        <div class="editor-group">
+                            <label>Period</label>
+                            <input type="text" name="exp_period_{{ loop.index0 }}" value="{{ exp.period }}">
+                        </div>
+                        <div class="editor-group">
+                            <label>Achievements (one per line)</label>
+                            <textarea name="exp_achievements_{{ loop.index0 }}" rows="4">{{ exp.achievements|join('\n') }}</textarea>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <h3>🎓 Education</h3>
+                    {% for edu in resume_data.education %}
+                    <div class="education-item">
+                        <div class="editor-group">
+                            <label>Degree</label>
+                            <input type="text" name="edu_degree_{{ loop.index0 }}" value="{{ edu.degree }}">
+                        </div>
+                        <div class="editor-group">
+                            <label>Institution</label>
+                            <input type="text" name="edu_institution_{{ loop.index0 }}" value="{{ edu.institution }}">
+                        </div>
+                        <div class="editor-group">
+                            <label>Year</label>
+                            <input type="text" name="edu_year_{{ loop.index0 }}" value="{{ edu.year }}">
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">
+                            🔄 Regenerate Resume
+                        </button>
+                        <a href="/download/{{ filename }}" class="btn btn-secondary" style="text-align: center; text-decoration: none; line-height: 20px;">
+                            ⬇️ Download Current
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right: Preview -->
+            <div class="preview-panel">
+                <h3>📄 Preview</h3>
+                <iframe class="preview-iframe" src="/preview/{{ filename }}"></iframe>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                ← Start New Resume
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // Make color dots clickable - click dot to select radio
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', function(e) {
+                // Find the radio input before this dot
+                const radio = this.previousElementSibling;
+                if (radio && radio.type === 'radio') {
+                    radio.checked = true;
+                }
+            });
+        });
+        
+        // Show visual feedback when template or font changes
+        const designSelects = document.querySelectorAll('.design-select');
+        designSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                this.style.borderColor = '#10b981';
+                setTimeout(() => {
+                    this.style.borderColor = '#667eea';
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>

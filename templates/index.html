@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI Resume Generator</h1>
+            <p class="subtitle">Generate tailored resumes using AI in seconds</p>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="/generate" method="POST" class="resume-form">
+            <div class="form-section">
+                <h2>📋 Job Description</h2>
+                <textarea name="job_description" id="job_description" rows="8" required 
+                          placeholder="Paste the job description here...&#10;&#10;Example:&#10;Senior Software Engineer needed. Requirements:&#10;- 5+ years Python experience&#10;- Strong in React and Node.js&#10;- AWS/cloud experience"></textarea>
+            </div>
+
+            <div class="form-section">
+                <h2>👤 Your Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" name="name" id="name" required placeholder="Jane Smith">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email" placeholder="jane.smith@email.com">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="tel" name="phone" id="phone" placeholder="(555) 123-4567">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" name="location" id="location" placeholder="Austin, TX">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="background">Professional Background</label>
+                    <textarea name="background" id="background" rows="3" 
+                              placeholder="Brief summary of your professional background (1-2 sentences)&#10;Example: Experienced software engineer with 6 years building scalable web applications..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="skills">Skills (comma-separated)</label>
+                    <input type="text" name="skills" id="skills" 
+                           placeholder="Python, JavaScript, React, AWS, Docker, Git...">
+                </div>
+
+                <div class="form-group">
+                    <label for="experience">Work Experience Summary</label>
+                    <textarea name="experience" id="experience" rows="5" 
+                              placeholder="Summarize your work experience...&#10;&#10;Example:&#10;Senior Engineer at TechCorp (2021-Present): Led microservices development.&#10;Engineer at StartupXYZ (2019-2021): Built full-stack features."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="education">Education</label>
+                    <textarea name="education" id="education" rows="2" 
+                              placeholder="BS Computer Science, MIT, 2020"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>🎨 Resume Template - Unique Designs!</h2>
+                <div class="form-group">
+                    <label for="template">Choose Your Unique Design</label>
+                    <select name="template" id="template" required onchange="toggleColorPicker()">
+                        <option value="sidebar_accent">Sidebar Accent - Colored left sidebar with diagonal stripe ⭐⭐⭐</option>
+                        <option value="diagonal_header">Diagonal Header - Modern geometric diagonal design ⭐⭐⭐</option>
+                        <option value="circle_accent">Circle Accent - Circular design elements throughout ⭐⭐</option>
+                    </select>
+                    <small>💡 These have ACTUAL design elements - not just colored rectangles!</small>
+                </div>
+
+                <!-- Color Scheme Selector -->
+                <div class="form-group" id="colorSchemeGroup">
+                    <label for="color_scheme">🎨 Choose Your Accent Color (16 Vibrant Options!)</label>
+                    <div class="color-picker-grid">
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="blue" checked>
+                            <span class="color-preview" style="background: #4A90E2;"></span>
+                            <span class="color-name">Blue</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="indigo">
+                            <span class="color-preview" style="background: #6366f1;"></span>
+                            <span class="color-name">Indigo</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="purple">
+                            <span class="color-preview" style="background: #9333ea;"></span>
+                            <span class="color-name">Purple</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="violet">
+                            <span class="color-preview" style="background: #8b5cf6;"></span>
+                            <span class="color-name">Violet</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="teal">
+                            <span class="color-preview" style="background: #14b8a6;"></span>
+                            <span class="color-name">Teal</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="emerald">
+                            <span class="color-preview" style="background: #10b981;"></span>
+                            <span class="color-name">Emerald</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="green">
+                            <span class="color-preview" style="background: #22c55e;"></span>
+                            <span class="color-name">Green</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="lime">
+                            <span class="color-preview" style="background: #84cc16;"></span>
+                            <span class="color-name">Lime</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="rose">
+                            <span class="color-preview" style="background: #f43f5e;"></span>
+                            <span class="color-name">Rose</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="pink">
+                            <span class="color-preview" style="background: #ec4899;"></span>
+                            <span class="color-name">Pink</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="red">
+                            <span class="color-preview" style="background: #ef4444;"></span>
+                            <span class="color-name">Red</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="orange">
+                            <span class="color-preview" style="background: #f97316;"></span>
+                            <span class="color-name">Orange</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="amber">
+                            <span class="color-preview" style="background: #f59e0b;"></span>
+                            <span class="color-name">Amber</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="yellow">
+                            <span class="color-preview" style="background: #eab308;"></span>
+                            <span class="color-name">Yellow</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="cyan">
+                            <span class="color-preview" style="background: #06b6d4;"></span>
+                            <span class="color-name">Cyan</span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="color_scheme" value="sky">
+                            <span class="color-preview" style="background: #0ea5e9;"></span>
+                            <span class="color-name">Sky</span>
+                        </label>
+                    </div>
+                    <small>✨ 16 vibrant colors to make your resume stand out!</small>
+                </div>
+
+                <!-- Font Family Selector -->
+                <div class="form-group">
+                    <label for="font_family">🔤 Choose Your Font</label>
+                    <select name="font_family" id="font_family">
+                        <option value="helvetica">Helvetica - Modern & clean (Recommended)</option>
+                        <option value="times">Times New Roman - Classic & traditional</option>
+                        <option value="courier">Courier - Typewriter style</option>
+                    </select>
+                    <small>✍️ Fonts affect the overall look and feel of your resume!</small>
+                </div>
+            </div>
+
+            <script>
+                function toggleColorPicker() {
+                    const template = document.getElementById('template').value;
+                    const colorGroup = document.getElementById('colorSchemeGroup');
+                    if (template === 'modern_complex' || template === 'visual_blocks') {
+                        colorGroup.style.display = 'block';
+                    } else {
+                        colorGroup.style.display = 'none';
+                    }
+                }
+                
+                // Show color picker on page load
+                document.addEventListener('DOMContentLoaded', toggleColorPicker);
+            </script>
+
+            <div class="form-section">
+                <h2>🔑 API Configuration</h2>
+                <div class="form-group">
+                    <label for="api_key">OpenAI API Key *</label>
+                    <input type="password" name="api_key" id="api_key" 
+                           placeholder="sk-...or leave blank to use environment variable">
+                    <small>Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI</a> or set OPENAI_API_KEY environment variable</small>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">✨ Generate Resume</button>
+        </form>
+
+        <footer>
+            <p>💡 <strong>Tip:</strong> Review and customize the generated resume before using it!</p>
+            <p class="cost-note">💰 Super affordable: ~$0.002 per resume with GPT-4o-mini (15x cheaper than GPT-4!)</p>
+        </footer>
+    </div>
+</body>
+</html>

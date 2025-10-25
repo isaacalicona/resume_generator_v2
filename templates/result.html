@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Generated - AI Resume Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI Resume Generator</h1>
+        </header>
+
+        <div class="success-card">
+            <div class="success-icon">✅</div>
+            <h2>Resume Generated Successfully!</h2>
+            <p>Your tailored resume is ready to download.</p>
+            
+            <div class="action-buttons">
+                <a href="{{ url_for('download_file', filename=filename) }}" class="download-btn">
+                    📥 Download Resume
+                </a>
+                <a href="{{ url_for('index') }}" class="secondary-btn">
+                    🔄 Generate Another
+                </a>
+            </div>
+
+            <div class="tips">
+                <h3>📝 Next Steps:</h3>
+                <ul>
+                    <li>Review the resume for accuracy</li>
+                    <li>Customize it further if needed</li>
+                    <li>Check for any formatting issues</li>
+                    <li>Tailor company-specific details</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p>💡 <strong>Pro Tip:</strong> Generate multiple versions for different job types!</p>
+        </footer>
+    </div>
+</body>
+</html>
